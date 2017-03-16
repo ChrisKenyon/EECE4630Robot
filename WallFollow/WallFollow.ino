@@ -3,37 +3,40 @@
 #include <PID_v1.h>
 #include <NewPing.h>
 
-#define LINE_IN1 A0
-#define LINE_IN2 A1
-#define LINE_IN3 A6
+#define MAX_SPEED 150
 
-#define MAX_SPEED 100
+#define FRONT_TRIGGER_PIN  A4
+#define FRONT_ECHO_PIN     A5
+#define RIGHT_TRIGGER_PIN  A2
+#define RIGHT_ECHO_PIN     A3
+#define MAX_DISTANCE 200
+#define TOO_CLOSE_DIST 13
+#define SET_DISTANCE 15
 
+NewPing frontSonar(FRONT_TRIGGER_PIN, FRONT_ECHO_PIN, MAX_DISTANCE);
+NewPing rightSonar(RIGHT_TRIGGER_PIN, RIGHT_ECHO_PIN, MAX_DISTANCE);
+int frontDist, rightDist;
 RedBotMotors motors; // Instantiate the motor control object.
-
+/*
 //Define Variables we'll be connecting to
-double Setpoint, in1, in2, in3, Output, pidIn;
+double Setpoint, Output, pidIn;
 //Specify the links and initial tuning parameters
 double Kp=0.001, Ki=0, Kd=0.0001;
 PID pid(&pidIn, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
-
+*/
 void setup(){
   Serial.begin(9600);
   Serial.print("Setup Started.\n");
-  //initialize the variables we're linked to
-  in1 = analogRead(LINE_IN1);
-  //in2 = analogRead(LINE_IN2);
-  in3 = analogRead(LINE_IN3);
-  pidIn = in3 - in1;
-  Setpoint = 0;
-
+  /*
+  Setpoint = 10;
   //turn the PID on
   pid.SetMode(AUTOMATIC);
   pid.SetOutputLimits(-1,1);
-  pid.SetSampleTime(50);
+  pid.SetSampleTime(50);*/
+  //pidIn = rightSonar.ping_cm();
   Serial.print("Setup Complete.\n");
 }
-
+/*
 void setMotors(double pidOut){
   if (pidOut > 0) {
     motors.rightMotor(MAX_SPEED);
@@ -44,32 +47,78 @@ void setMotors(double pidOut){
     motors.leftMotor(MAX_SPEED);
   }
 }
+*/
 
+// Takes doubles for left and right as percentage 0.0 - 1.0
+void setMotors(double left, double right){
+  motors.rightMotor(0 - int(MAX_SPEED * right));
+  motors.leftMotor(0 - int(MAX_SPEED * left));
+}
+
+bool wRight, wFront, tooClose, lostRightWall, lostFrontWall;
 void loop(){
-  //delay(50);
-  in1 = analogRead(LINE_IN1);
-  //in2 = analogRead(LINE_IN2);
-  in3 = analogRead(LINE_IN3);
+  //delay(100);
+  frontDist = frontSonar.ping_cm();
+  rightDist = rightSonar.ping_cm();
+  lostRightWall = rightDist == 0;
+  lostFrontWall = frontDist == 0;
+  wRight = rightDist <= SET_DISTANCE && !lostRightWall;
+  wFront = frontDist <= SET_DISTANCE && !lostFrontWall;
+  tooClose = (rightDist < TOO_CLOSE_DIST && !lostRightWall) ||
+             (frontDist < SET_DISTANCE && !lostFrontWall);
   /*
-  Serial.print("Input 1: ");
-  Serial.print(in1);
-  Serial.println("");
-  Serial.print("Input 3: ");
-  Serial.print(in3);
-  Serial.println("");
+  Serial.print("Right: ");
+  Serial.print(rightDist);
+  Serial.print("\nFront: ");
+  Serial.print(frontDist);
+  Serial.print("\n");
   */
-  pidIn = in3 - in1;
+  if(wRight && !wFront)
+  {
+    if (tooClose){    
+      //Serial.print("Turning left\n");
+      setMotors(0.5,0.9);
+    }
+    else {       
+      //Serial.print("Moving forward\n");
+      setMotors(1.0,1.0);
+    }
+  }
+  else if(wRight && wFront)
+  {
+    //Serial.print("Hard turning left\n");
+    setMotors(0.0,1.0);
+  }
+  else if(!wRight && !wFront)
+  {
+    if (lostRightWall){
+      //Serial.print("Hard turning right\n");
+      setMotors(0.9,0.3);  
+    }
+    else {
+      //Serial.print("Turning right\n");
+      setMotors(0.9,0.65);  
+    }
+    
+  }
+  else if(!wRight && wFront)
+  {
+    //Serial.print("Hard turning left\n");
+    setMotors(0.,1.0);
+  }  
+  /*
+  pidIn = rightDist;
   /*
   Serial.print("PID Input: ");
   Serial.print(pidIn);
   Serial.println("");
-  */
+  /
   pid.Compute();
   /*
   Serial.print("PID response: ");
   Serial.print(Output);
   Serial.println("");
-  */
-  setMotors(Output);
+  /
+  setMotors(Output);*/
 }
 
