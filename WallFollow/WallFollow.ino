@@ -3,7 +3,7 @@
 #include <PID_v1.h>
 #include <NewPing.h>
 
-#define MAX_SPEED 180
+#define MAX_SPEED 130
 
 #define PIN_FRONT_TRIG  A4
 #define PIN_FRONT_ECHO  A5
@@ -24,7 +24,7 @@ RedBotMotors motors;
 
 // PID object and parameters
 double Setpoint = SETPOINT, pidOut, pidIn;
-double Kp=0.01, Ki=0, Kd=0.015;
+double Kp=0.01, Ki=0, Kd=0.007;
 PID pid(&pidIn, &pidOut, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // Takes doubles for left and right as percentage 0.0 - 1.0
@@ -48,7 +48,7 @@ void turnLeft() {
     frontDist = frontSonar.ping_cm();
   }
 
-  delay(200);
+  delay(175);
 
   /*// Turn until the right side stops decreasing
   int current = 199;
@@ -89,6 +89,15 @@ void loop() {
   compute = false;
   while (compute == false) {
     rightDist = rightSonar.ping_cm();
+    if (rightDist == 0){
+      rightDist = MAX_DISTANCE;
+    }
+    if (rightDist > SETPOINT*2) {;
+      //pid.SetOutputLimits(-0.8,0.8);
+    }
+    else {
+      pid.SetOutputLimits(-0.55,0.55);
+    }
     pidIn = rightDist;
     compute = pid.Compute();
   }
