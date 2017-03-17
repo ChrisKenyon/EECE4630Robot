@@ -56,6 +56,8 @@ void setMotors(double left, double right){
 }
 
 bool wRight, wFront, tooClose, lostRightWall, lostFrontWall;
+int currentError, previousError, changeInError; 
+
 void loop(){
   //delay(100);
   frontDist = frontSonar.ping_cm();
@@ -66,45 +68,61 @@ void loop(){
   wFront = frontDist <= SET_DISTANCE && !lostFrontWall;
   tooClose = (rightDist < TOO_CLOSE_DIST && !lostRightWall) ||
              (frontDist < SET_DISTANCE && !lostFrontWall);
-  /*
+  
   Serial.print("Right: ");
   Serial.print(rightDist);
   Serial.print("\nFront: ");
   Serial.print(frontDist);
   Serial.print("\n");
+  
+
+  /*Serial.print("Previous Error");  
+  Serial.print(previousError);
+  Serial.print("\n");
   */
   if(wRight && !wFront)
   {
     if (tooClose){    
-      //Serial.print("Turning left\n");
+      Serial.print("Turning left\n");
       setMotors(0.5,0.9);
+      currentError = SET_DISTANCE - rightDist;
+      changeInError =  currentError - previousError;
     }
     else {       
-      //Serial.print("Moving forward\n");
+      Serial.print("Moving forward\n");
       setMotors(1.0,1.0);
+      currentError = SET_DISTANCE - rightDist;
+      changeInError =  currentError - previousError;
     }
   }
   else if(wRight && wFront)
   {
-    //Serial.print("Hard turning left\n");
+    Serial.print("Hard turning left\n");
     setMotors(0.0,1.0);
+    currentError = SET_DISTANCE - rightDist;
+    changeInError =  currentError - previousError;
   }
   else if(!wRight && !wFront)
   {
     if (lostRightWall){
-      //Serial.print("Hard turning right\n");
+      Serial.print("Hard turning right\n");
       setMotors(0.9,0.3);  
+      currentError = SET_DISTANCE - rightDist;
+      changeInError =  currentError - previousError;
     }
     else {
-      //Serial.print("Turning right\n");
+      Serial.print("Turning right\n");
       setMotors(0.9,0.65);  
-    }
-    
+      currentError = SET_DISTANCE - rightDist;
+      changeInError =  currentError - previousError;
+      }
   }
   else if(!wRight && wFront)
   {
-    //Serial.print("Hard turning left\n");
+    Serial.print("Hard turning left\n");
     setMotors(0.,1.0);
+    currentError = SET_DISTANCE - rightDist;
+    changeInError =  currentError - previousError;   
   }  
   /*
   pidIn = rightDist;
@@ -118,7 +136,16 @@ void loop(){
   Serial.print("PID response: ");
   Serial.print(Output);
   Serial.println("");
-  /
-  setMotors(Output);*/
+  
+  setMotors(Output);
+  Serial.print("Current Error");
+  Serial.print(currentError);
+  Serial.print("\n");
+
+  Serial.print("Change In Error");
+  Serial.print(changeInError);
+  Serial.print("\n");
+  */
+  previousError = currentError;
 }
 
