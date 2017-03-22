@@ -2,7 +2,7 @@
 #include <RedBotSoftwareSerial.h>
 #include <PID_v1.h>
 
-#define MAX_SPEED 100
+#define MAX_SPEED 90
 
 #define PIN_LINE_LEFT  A0
 #define PIN_LINE_MID   A1
@@ -16,7 +16,7 @@ RedBotMotors motors;
 
 // PID object and parameters
 double Setpoint = SETPOINT, pidOut, pidIn;
-double Kp=0.001, Ki=0, Kd=0.0001;
+double Kp=0.01, Ki=0.04, Kd=0.0001;
 PID pid(&pidIn, &pidOut, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 // Takes doubles for left and right as percentage 0.0 - 1.0
@@ -41,8 +41,8 @@ void setup(){
 
   //turn the PID on
   pid.SetMode(AUTOMATIC);
-  pid.SetOutputLimits(-0.5,0.5);
-  pid.SetSampleTime(20);
+  pid.SetOutputLimits(-1,1);
+  pid.SetSampleTime(5);
 
   Serial.print("Setup Complete.\n");
 }
@@ -56,8 +56,10 @@ void loop() {
   while (compute == false) {
     error = getError();
     pidIn = error;
+    Serial.print(error);
+    Serial.print("\n");
     compute = pid.Compute();
   }
 
-  setMotors(1-pidOut, 1+pidOut);
+  setMotors(1+pidOut, 1-pidOut);
 }
