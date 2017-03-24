@@ -80,10 +80,10 @@ void loop() {
         // random turn
       }
       else if (leftreading > THRESHOLD) {
-        state = S_STRAIGHT_RIGHT;
+        state = S_STRAIGHT_LEFT;
       }
       else if (rightreading > THRESHOLD) {
-        state = S_STRAIGHT_LEFT;
+        state = S_STRAIGHT_RIGHT;
       }
       break;
       
