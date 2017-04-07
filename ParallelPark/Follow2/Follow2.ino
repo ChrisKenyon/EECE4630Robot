@@ -89,32 +89,32 @@ int pullBack(){
 
 #define FRONT_DISTANCE 7
 #define RIGHT_DISTANCE 9
-#define ROTATE_SPEED_L .35
-#define ROTATE_SPEED_R .3
-int rotateRight(){
+#define ROTATE_SPEED_L .55
+#define ROTATE_SPEED_R .5
+void rotateRight(){
   setMotors(ROTATE_SPEED_L,-ROTATE_SPEED_R,MAX_SPEED);
   int currentFront = frontSonar.ping_cm();
   int currentRight = frontSonar.ping_cm();
-  int count = 0;
   while(currentFront > FRONT_DISTANCE || currentFront == 0 || currentRight > RIGHT_DISTANCE){
     delay(75);
     currentFront = frontSonar.ping_cm();
     currentRight = frontSonar.ping_cm();
-    count++;
   }
-  delay(350);
+  //delay(200);
   setMotors(0,0,0);
-  return count;
 }
 
 #define ROTATE_SPEED .3
-void rotateLeft(int count){
+void rotateLeft() {
   setMotors(-ROTATE_SPEED_L,ROTATE_SPEED_R,MAX_SPEED);
-  while(count > 0){
-    delay(75);
-    count--;
+  delay(500);
+  int rightCur = INT_MAX-1, rightLast = INT_MAX;
+  while(rightCur < rightLast) {
+    rightLast = rightCur;
+    rightCur = rightSonar.ping_cm();
+    if (rightCur == 0) { rightCur = MAX_DISTANCE; }
+    delay(50);
   }
-  delay(300);
   setMotors(0,0,0);
 }
 
@@ -141,9 +141,9 @@ void parallelPark(){
   setMotors(0,0,0);
   
   backIn();
-  int rotCt = rotateRight();
+  rotateRight();
   delay(2000);
-  rotateLeft(rotCt);
+  rotateLeft();
   
   
   right = rightSonar.ping_cm();
