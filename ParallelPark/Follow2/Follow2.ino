@@ -100,7 +100,7 @@ void rotateRight(){
     currentFront = frontSonar.ping_cm();
     currentRight = frontSonar.ping_cm();
   }
-  //delay(200);
+  //udelay(200);
   setMotors(0,0,0);
 }
 
@@ -136,13 +136,12 @@ void parallelPark(){
   while (rightSonar.ping_cm() > NO_BOX_DIST)
     delay(50);
   // We are at the second box now
-  
   delay(150);
   setMotors(0,0,0);
   
   backIn();
   rotateRight();
-  delay(2000);
+  delay(100);
   rotateLeft();
   
   
